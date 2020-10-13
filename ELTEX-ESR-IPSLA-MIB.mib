@@ -1,0 +1,2002 @@
+ELTEX-ESR-IPSLA-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+	eltEsrMibs
+		FROM ELTEX-ESR-MIB
+	TruthValue, RowStatus, DateAndTime,
+	DisplayString
+		FROM SNMPv2-TC
+	InterfaceIndex
+		FROM IF-MIB
+	InetAddress, InetAddressType
+		FROM INET-ADDRESS-MIB;
+
+eltEsrIpSlaMIB MODULE-IDENTITY
+	LAST-UPDATED "201811080000Z"
+	ORGANIZATION "Eltex Enterprise, Ltd."
+	CONTACT-INFO "www.eltex.nsk.ru"
+	DESCRIPTION "The MIB module for management Eltex ESR IP SLA."
+	REVISION "201811080000Z"
+	DESCRIPTION "Initial revision of The ELTEX-ESR-IPSLA-MIB."
+	::= { eltEsrMibs 2 }
+
+-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+-- Identifiers
+-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+eltEsrIpSlaObjects OBJECT IDENTIFIER ::= { eltEsrIpSlaMIB 1 }
+eltEsrIpSlaConfigs OBJECT IDENTIFIER ::= { eltEsrIpSlaObjects 2 }
+eltEsrIpSlaStatistics OBJECT IDENTIFIER ::= { eltEsrIpSlaObjects 3 }
+
+-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+-- Textual conventions
+-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+eltEsrIpSlaTestType ::= TEXTUAL-CONVENTION
+	STATUS      current
+	DESCRIPTION "Specifies the type of IP SLA test to be performed.
+	             udpJitter(1)    UDP-jitter test;
+	             icmpEcho(2)     ICMP-echo test."
+	SYNTAX      INTEGER {
+	                udpJitter(1),
+	                icmpEcho(2)
+	            }
+
+eltEsrIpSlaLoggingLevel ::= TEXTUAL-CONVENTION
+	STATUS      current
+	DESCRIPTION "Specifies the level of the IP SLA logging."
+	SYNTAX      INTEGER {
+	                error(0),
+	                warning(1),
+	                notice(2),
+	                information(3),
+	                debug(4),
+	                trace(5)
+	            }
+
+eltEsrIpSlaMode ::= TEXTUAL-CONVENTION
+	STATUS      current
+	DESCRIPTION "Specifies the mode of IP SLA backend."
+	SYNTAX      INTEGER {
+	                eltex(0),
+	                wislaLocal(1),
+	                wislaRemote(2)
+	            }
+
+eltEsrIpSlaAuthenticationMode ::= TEXTUAL-CONVENTION
+	STATUS      current
+	DESCRIPTION "The algorithm of the authentication.
+	             Describe types:
+	                none(0)          without authentication;
+	                sha256(1)        SHA256;
+	                hmacSha256(2)    HMAC-SHA256."
+	SYNTAX      INTEGER {
+	                none(0),
+	                sha256(1),
+	                hmacSha256(2)
+	            }
+
+-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+-- IP SLA configurations
+-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+eltEsrIpSlaCandConfGeneralTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF EltEsrIpSlaCandConfGeneralEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION "Table of candidate configuration of an IP SLA general parameters."
+	::= { eltEsrIpSlaConfigs 1 }
+
+eltEsrIpSlaCandConfGeneralEntry OBJECT-TYPE
+	SYNTAX EltEsrIpSlaCandConfGeneralEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION "Entry describes the general parameters.
+	             Control through the eltEsrIpSlaCandConfGeneralIndex field."
+	INDEX { eltEsrIpSlaCandConfGeneralIndex }
+	::= { eltEsrIpSlaCandConfGeneralTable 1 }
+
+EltEsrIpSlaCandConfGeneralEntry ::= SEQUENCE {
+
+	eltEsrIpSlaCandConfGeneralIndex                      INTEGER,
+
+	eltEsrIpSlaCandConfGeneralMode                       eltEsrIpSlaMode,
+	eltEsrIpSlaCandConfGeneralEnabled                    TruthValue,
+
+	eltEsrIpSlaCandConfGeneralSourceAddressType          InetAddressType,
+	eltEsrIpSlaCandConfGeneralSourceAddress              InetAddress,
+	eltEsrIpSlaCandConfGeneralHostname                   DisplayString,
+	eltEsrIpSlaCandConfGeneralPortal                     OCTET STRING,
+	eltEsrIpSlaCandConfGeneralKeyChainName               DisplayString,
+
+	eltEsrIpSlaCandConfGeneralLoggingLevel               eltEsrIpSlaLoggingLevel,
+	eltEsrIpSlaCandConfGeneralLoggingEnabled             TruthValue,
+
+	eltEsrIpSlaCandConfGeneralResponderPortsGroupName    DisplayString
+}
+
+eltEsrIpSlaCandConfGeneralIndex OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "Index of the entry."
+	::= { eltEsrIpSlaCandConfGeneralEntry 1 }
+
+eltEsrIpSlaCandConfGeneralMode OBJECT-TYPE
+	SYNTAX     eltEsrIpSlaMode
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The mode in which the IP SLA will be configured."
+	::= { eltEsrIpSlaCandConfGeneralEntry 2 }
+
+eltEsrIpSlaCandConfGeneralEnabled OBJECT-TYPE
+	SYNTAX     TruthValue
+	MAX-ACCESS read-write
+	STATUS     current
+	DESCRIPTION
+	    "Enabling the IP SLA."
+	::= { eltEsrIpSlaCandConfGeneralEntry 3 }
+
+eltEsrIpSlaCandConfGeneralSourceAddressType OBJECT-TYPE
+	SYNTAX     InetAddressType
+	MAX-ACCESS read-write
+	STATUS     current
+	DESCRIPTION
+	    "The type of address that would be configured with
+	     eltEsrIpSlaCandConfGeneralSourceAddress field."
+	::= { eltEsrIpSlaCandConfGeneralEntry 4 }
+
+eltEsrIpSlaCandConfGeneralSourceAddress OBJECT-TYPE
+	SYNTAX     InetAddress
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The source address."
+	::= { eltEsrIpSlaCandConfGeneralEntry 5 }
+
+eltEsrIpSlaCandConfGeneralHostname OBJECT-TYPE
+	SYNTAX     DisplayString
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The DNS name of host."
+	::= { eltEsrIpSlaCandConfGeneralEntry 6 }
+
+eltEsrIpSlaCandConfGeneralPortal OBJECT-TYPE
+	SYNTAX     OCTET STRING
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The URL-address of the portal."
+	::= { eltEsrIpSlaCandConfGeneralEntry 7 }
+
+eltEsrIpSlaCandConfGeneralKeyChainName OBJECT-TYPE
+	SYNTAX     DisplayString
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The control phase key chain name."
+	::= { eltEsrIpSlaCandConfGeneralEntry 8 }
+
+eltEsrIpSlaCandConfGeneralLoggingLevel OBJECT-TYPE
+	SYNTAX     eltEsrIpSlaLoggingLevel
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The logging level."
+	::= { eltEsrIpSlaCandConfGeneralEntry 9 }
+
+eltEsrIpSlaCandConfGeneralLoggingEnabled OBJECT-TYPE
+	SYNTAX     TruthValue
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "Whether the logging is enabled."
+	::= { eltEsrIpSlaCandConfGeneralEntry 10 }
+
+eltEsrIpSlaCandConfGeneralResponderPortsGroupName OBJECT-TYPE
+	SYNTAX     DisplayString
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The name of the service object-group, containing ports.
+	     It is UDP-ports for WiSLA responder."
+	::= { eltEsrIpSlaCandConfGeneralEntry 11 }
+
+eltEsrIpSlaRunConfGeneralTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF EltEsrIpSlaRunConfGeneralEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION "Table of running configuration of an IP SLA general parameters."
+	::= { eltEsrIpSlaConfigs 2 }
+
+eltEsrIpSlaRunConfGeneralEntry OBJECT-TYPE
+	SYNTAX EltEsrIpSlaRunConfGeneralEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION "Entry describes the general parameters."
+	INDEX { eltEsrIpSlaRunConfGeneralIndex }
+	::= { eltEsrIpSlaRunConfGeneralTable 1 }
+
+EltEsrIpSlaRunConfGeneralEntry ::= SEQUENCE {
+
+	eltEsrIpSlaRunConfGeneralIndex                      INTEGER,
+
+	eltEsrIpSlaRunConfGeneralMode                       eltEsrIpSlaMode,
+	eltEsrIpSlaRunConfGeneralEnabled                    TruthValue,
+
+	eltEsrIpSlaRunConfGeneralSourceAddressType          InetAddressType,
+	eltEsrIpSlaRunConfGeneralSourceAddress              InetAddress,
+	eltEsrIpSlaRunConfGeneralHostname                   DisplayString,
+	eltEsrIpSlaRunConfGeneralPortal                     OCTET STRING,
+	eltEsrIpSlaRunConfGeneralKeyChainName               DisplayString,
+
+	eltEsrIpSlaRunConfGeneralLoggingLevel               eltEsrIpSlaLoggingLevel,
+	eltEsrIpSlaRunConfGeneralLoggingEnabled             TruthValue,
+
+	eltEsrIpSlaRunConfGeneralResponderPortsGroupName    DisplayString
+}
+
+eltEsrIpSlaRunConfGeneralIndex OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS not-accessible
+	STATUS     current
+	DESCRIPTION
+	    "Index of the entry."
+	::= { eltEsrIpSlaRunConfGeneralEntry 1 }
+
+eltEsrIpSlaRunConfGeneralMode OBJECT-TYPE
+	SYNTAX     eltEsrIpSlaMode
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The mode in which the IP SLA will be configured."
+	::= { eltEsrIpSlaRunConfGeneralEntry 2 }
+
+eltEsrIpSlaRunConfGeneralEnabled OBJECT-TYPE
+	SYNTAX     TruthValue
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "Whether the IP SLA is enabled."
+	::= { eltEsrIpSlaRunConfGeneralEntry 3 }
+
+eltEsrIpSlaRunConfGeneralSourceAddressType OBJECT-TYPE
+	SYNTAX     InetAddressType
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The type describe address in the
+	     eltEsrIpSlaRunConfGeneralSourceAddress field."
+	::= { eltEsrIpSlaRunConfGeneralEntry 4 }
+
+eltEsrIpSlaRunConfGeneralSourceAddress OBJECT-TYPE
+	SYNTAX     InetAddress
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The source address."
+	::= { eltEsrIpSlaRunConfGeneralEntry 5 }
+
+eltEsrIpSlaRunConfGeneralHostname OBJECT-TYPE
+	SYNTAX     DisplayString
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The DNS name of host."
+	::= { eltEsrIpSlaRunConfGeneralEntry 6 }
+
+eltEsrIpSlaRunConfGeneralPortal OBJECT-TYPE
+	SYNTAX     OCTET STRING
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The URL-address of the portal."
+	::= { eltEsrIpSlaRunConfGeneralEntry 7 }
+
+eltEsrIpSlaRunConfGeneralKeyChainName OBJECT-TYPE
+	SYNTAX     DisplayString
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The control phase key chain name."
+	::= { eltEsrIpSlaRunConfGeneralEntry 8 }
+
+eltEsrIpSlaRunConfGeneralLoggingLevel OBJECT-TYPE
+	SYNTAX     eltEsrIpSlaLoggingLevel
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The logging level."
+	::= { eltEsrIpSlaRunConfGeneralEntry 9 }
+
+eltEsrIpSlaRunConfGeneralLoggingEnabled OBJECT-TYPE
+	SYNTAX     TruthValue
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "Whether the logging is enabled."
+	::= { eltEsrIpSlaRunConfGeneralEntry 10 }
+
+eltEsrIpSlaRunConfGeneralResponderPortsGroupName OBJECT-TYPE
+	SYNTAX     DisplayString
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The name of the service object-group, containing ports.
+	     It is UDP-ports for WiSLA responder."
+	::= { eltEsrIpSlaRunConfGeneralEntry 11 }
+
+eltEsrIpSlaCandConfTestTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF EltEsrIpSlaCandConfTestEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION "Table of candidate configuration of an IP SLA tests."
+	::= { eltEsrIpSlaConfigs 3 }
+
+eltEsrIpSlaCandConfTestEntry OBJECT-TYPE
+	SYNTAX EltEsrIpSlaCandConfTestEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION "Entry describes the IP SLA test parameters.
+	             Control through the eltEsrIpSlaCandConfTestIndex field."
+	INDEX { eltEsrIpSlaCandConfTestIndex }
+	::= { eltEsrIpSlaCandConfTestTable 1 }
+
+EltEsrIpSlaCandConfTestEntry ::= SEQUENCE {
+
+	eltEsrIpSlaCandConfTestIndex                         INTEGER,
+
+	eltEsrIpSlaCandConfTestType                          eltEsrIpSlaTestType,
+	eltEsrIpSlaCandConfTestEnable                        TruthValue,
+	eltEsrIpSlaCandConfTestControlEnable                 TruthValue,
+	eltEsrIpSlaCandConfTestVrfName                       DisplayString,
+
+	eltEsrIpSlaCandConfTestDstAddressType                InetAddressType,
+	eltEsrIpSlaCandConfTestDstAddress                    InetAddress,
+	eltEsrIpSlaCandConfTestDstPort                       INTEGER,
+	eltEsrIpSlaCandConfTestSrcAddressType                InetAddressType,
+	eltEsrIpSlaCandConfTestSrcAddress                    InetAddress,
+	eltEsrIpSlaCandConfTestSrcPort                       INTEGER,
+	eltEsrIpSlaCandConfTestSrcIfaceIndex                 InterfaceIndex,
+
+	eltEsrIpSlaCandConfTestCtrlPhaseDstPort              INTEGER,
+	eltEsrIpSlaCandConfTestCtrlPhaseSrcPort              INTEGER,
+	eltEsrIpSlaCandConfTestCtrlPhaseTimeout              Unsigned32,
+	eltEsrIpSlaCandConfTestCtrlPhaseAuthType             eltEsrIpSlaAuthenticationMode,
+	eltEsrIpSlaCandConfTestCtrlPhaseAuthKeyId            INTEGER,
+	eltEsrIpSlaCandConfTestCtrlPhaseAuthKeyStr           DisplayString,
+	eltEsrIpSlaCandConfTestCtrlPhaseAuthKeyStrEncrypt    DisplayString,
+
+	eltEsrIpSlaCandConfTestFrequrency                    INTEGER,
+	eltEsrIpSlaCandConfTestInterval                      INTEGER,
+	eltEsrIpSlaCandConfTestTimeout                       Unsigned32,
+	eltEsrIpSlaCandConfTestNumPackets                    INTEGER,
+	eltEsrIpSlaCandConfTestReqPacketSize                 INTEGER,
+
+	eltEsrIpSlaCandConfTestCOS                           INTEGER,
+	eltEsrIpSlaCandConfTestDSCP                          INTEGER,
+	eltEsrIpSlaCandConfTestTTL                           INTEGER,
+
+	eltEsrIpSlaCandConfTestRepHistoryCount               INTEGER
+}
+
+eltEsrIpSlaCandConfTestIndex OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The number of the test."
+	::= { eltEsrIpSlaCandConfTestEntry 1 }
+
+eltEsrIpSlaCandConfTestType OBJECT-TYPE
+	SYNTAX     eltEsrIpSlaTestType
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The type of the test."
+	::= { eltEsrIpSlaCandConfTestEntry 2 }
+
+eltEsrIpSlaCandConfTestEnable OBJECT-TYPE
+	SYNTAX     TruthValue
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "Whether the test is enabled."
+	::= { eltEsrIpSlaCandConfTestEntry 3 }
+
+eltEsrIpSlaCandConfTestControlEnable OBJECT-TYPE
+	SYNTAX     TruthValue
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "Whether the test control is enabled."
+	::= { eltEsrIpSlaCandConfTestEntry 4 }
+
+eltEsrIpSlaCandConfTestVrfName OBJECT-TYPE
+	SYNTAX     DisplayString
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The name of the virtual Routing/Forwarding instance which the test belongs."
+	::= { eltEsrIpSlaCandConfTestEntry 5 }
+
+eltEsrIpSlaCandConfTestDstAddressType OBJECT-TYPE
+	SYNTAX     InetAddressType
+	MAX-ACCESS read-write
+	STATUS     current
+	DESCRIPTION
+	    "The type of address that would be configured with
+	     eltEsrIpSlaCandConfTestDstAddress field."
+	::= { eltEsrIpSlaCandConfTestEntry 6 }
+
+eltEsrIpSlaCandConfTestDstAddress OBJECT-TYPE
+	SYNTAX     InetAddress
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The destination address."
+	::= { eltEsrIpSlaCandConfTestEntry 7 }
+
+eltEsrIpSlaCandConfTestDstPort OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The destination port number."
+	::= { eltEsrIpSlaCandConfTestEntry 8 }
+
+eltEsrIpSlaCandConfTestSrcAddressType OBJECT-TYPE
+	SYNTAX     InetAddressType
+	MAX-ACCESS read-write
+	STATUS     current
+	DESCRIPTION
+	    "The type of address that would be configured with
+	     eltEsrIpSlaCandConfTestSrcAddress field."
+	::= { eltEsrIpSlaCandConfTestEntry 9 }
+
+eltEsrIpSlaCandConfTestSrcAddress OBJECT-TYPE
+	SYNTAX     InetAddress
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The source address."
+	::= { eltEsrIpSlaCandConfTestEntry 10 }
+
+eltEsrIpSlaCandConfTestSrcPort OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The source port number."
+	::= { eltEsrIpSlaCandConfTestEntry 11 }
+
+eltEsrIpSlaCandConfTestSrcIfaceIndex OBJECT-TYPE
+	SYNTAX     InterfaceIndex
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The source interface index."
+	::= { eltEsrIpSlaCandConfTestEntry 12 }
+
+eltEsrIpSlaCandConfTestCtrlPhaseDstPort OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The destination port number for the control phase."
+	::= { eltEsrIpSlaCandConfTestEntry 13 }
+
+eltEsrIpSlaCandConfTestCtrlPhaseSrcPort OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The source port number for the control phase."
+	::= { eltEsrIpSlaCandConfTestEntry 14 }
+
+eltEsrIpSlaCandConfTestCtrlPhaseTimeout OBJECT-TYPE
+	SYNTAX     Unsigned32
+	UNITS      "ms"
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The timeout of the control phase in milliseconds."
+	::= { eltEsrIpSlaCandConfTestEntry 15 }
+
+eltEsrIpSlaCandConfTestCtrlPhaseAuthType OBJECT-TYPE
+	SYNTAX     eltEsrIpSlaAuthenticationMode
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The algorithm of the control phase authentication."
+	::= { eltEsrIpSlaCandConfTestEntry 16 }
+
+eltEsrIpSlaCandConfTestCtrlPhaseAuthKeyId OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The key id for the control phase authentication."
+	::= { eltEsrIpSlaCandConfTestEntry 17 }
+
+eltEsrIpSlaCandConfTestCtrlPhaseAuthKeyStr OBJECT-TYPE
+	SYNTAX     DisplayString
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The key for the control phase authentication.
+	     It is the string in ascii-text. Not be displayed."
+	::= { eltEsrIpSlaCandConfTestEntry 18 }
+
+eltEsrIpSlaCandConfTestCtrlPhaseAuthKeyStrEncrypt OBJECT-TYPE
+	SYNTAX     DisplayString (SIZE (16..32))
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The key for the control phase authentication.
+	     It is the encrypted string in hex."
+	::= { eltEsrIpSlaCandConfTestEntry 19 }
+
+eltEsrIpSlaCandConfTestFrequrency OBJECT-TYPE
+	SYNTAX     INTEGER
+	UNITS      "sec"
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The test retry period in seconds."
+	::= { eltEsrIpSlaCandConfTestEntry 20 }
+
+eltEsrIpSlaCandConfTestInterval OBJECT-TYPE
+	SYNTAX     INTEGER
+	UNITS      "ms"
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The interval in milliseconds."
+	::= { eltEsrIpSlaCandConfTestEntry 21 }
+
+eltEsrIpSlaCandConfTestTimeout OBJECT-TYPE
+	SYNTAX     Unsigned32
+	UNITS      "ms"
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The timeout of the test in milliseconds."
+	::= { eltEsrIpSlaCandConfTestEntry 22 }
+
+eltEsrIpSlaCandConfTestNumPackets OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The number of packets."
+	::= { eltEsrIpSlaCandConfTestEntry 23 }
+
+eltEsrIpSlaCandConfTestReqPacketSize OBJECT-TYPE
+	SYNTAX     INTEGER
+	UNITS      "B"
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The size of packet in bytes."
+	::= { eltEsrIpSlaCandConfTestEntry 24 }
+
+eltEsrIpSlaCandConfTestCOS OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The value of COS."
+	::= { eltEsrIpSlaCandConfTestEntry 25 }
+
+eltEsrIpSlaCandConfTestDSCP OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The value of DSCP."
+	::= { eltEsrIpSlaCandConfTestEntry 26 }
+
+eltEsrIpSlaCandConfTestTTL OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The value of TTL."
+	::= { eltEsrIpSlaCandConfTestEntry 27 }
+
+eltEsrIpSlaCandConfTestRepHistoryCount OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The number of history records."
+	::= { eltEsrIpSlaCandConfTestEntry 28 }
+
+eltEsrIpSlaRunConfTestTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF EltEsrIpSlaRunConfTestEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION "Table of running configuration of an IP SLA tests."
+	::= { eltEsrIpSlaConfigs 4 }
+
+eltEsrIpSlaRunConfTestEntry OBJECT-TYPE
+	SYNTAX EltEsrIpSlaRunConfTestEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION "Entry describes the IP SLA test parameters."
+	INDEX { eltEsrIpSlaRunConfTestIndex }
+	::= { eltEsrIpSlaRunConfTestTable 1 }
+
+EltEsrIpSlaRunConfTestEntry ::= SEQUENCE {
+
+	eltEsrIpSlaRunConfTestIndex                         INTEGER,
+
+	eltEsrIpSlaRunConfTestType                          eltEsrIpSlaTestType,
+	eltEsrIpSlaRunConfTestEnable                        TruthValue,
+	eltEsrIpSlaRunConfTestControlEnable                 TruthValue,
+	eltEsrIpSlaRunConfTestVrfName                       DisplayString,
+
+	eltEsrIpSlaRunConfTestDstAddressType                InetAddressType,
+	eltEsrIpSlaRunConfTestDstAddress                    InetAddress,
+	eltEsrIpSlaRunConfTestDstPort                       INTEGER,
+	eltEsrIpSlaRunConfTestSrcAddressType                InetAddressType,
+	eltEsrIpSlaRunConfTestSrcAddress                    InetAddress,
+	eltEsrIpSlaRunConfTestSrcPort                       INTEGER,
+	eltEsrIpSlaRunConfTestSrcIfaceIndex                 InterfaceIndex,
+
+	eltEsrIpSlaRunConfTestCtrlPhaseDstPort              INTEGER,
+	eltEsrIpSlaRunConfTestCtrlPhaseSrcPort              INTEGER,
+	eltEsrIpSlaRunConfTestCtrlPhaseTimeout              Unsigned32,
+	eltEsrIpSlaRunConfTestCtrlPhaseAuthType             eltEsrIpSlaAuthenticationMode,
+	eltEsrIpSlaRunConfTestCtrlPhaseAuthKeyId            INTEGER,
+	eltEsrIpSlaRunConfTestCtrlPhaseAuthKeyStrEncrypt    DisplayString,
+
+	eltEsrIpSlaRunConfTestFrequrency                    INTEGER,
+	eltEsrIpSlaRunConfTestInterval                      INTEGER,
+	eltEsrIpSlaRunConfTestTimeout                       Unsigned32,
+	eltEsrIpSlaRunConfTestNumPackets                    INTEGER,
+	eltEsrIpSlaRunConfTestReqPacketSize                 INTEGER,
+
+	eltEsrIpSlaRunConfTestCOS                           INTEGER,
+	eltEsrIpSlaRunConfTestDSCP                          INTEGER,
+	eltEsrIpSlaRunConfTestTTL                           INTEGER,
+
+	eltEsrIpSlaRunConfTestRepHistoryCount               INTEGER
+}
+
+eltEsrIpSlaRunConfTestIndex OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS not-accessible
+	STATUS     current
+	DESCRIPTION
+	    "The number of the test."
+	::= { eltEsrIpSlaRunConfTestEntry 1 }
+
+eltEsrIpSlaRunConfTestType OBJECT-TYPE
+	SYNTAX     eltEsrIpSlaTestType
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The type of the test."
+	::= { eltEsrIpSlaRunConfTestEntry 2 }
+
+eltEsrIpSlaRunConfTestEnable OBJECT-TYPE
+	SYNTAX     TruthValue
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "Whether the test is enabled."
+	::= { eltEsrIpSlaRunConfTestEntry 3 }
+
+eltEsrIpSlaRunConfTestControlEnable OBJECT-TYPE
+	SYNTAX     TruthValue
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "Whether the test control is enabled."
+	::= { eltEsrIpSlaRunConfTestEntry 4 }
+
+eltEsrIpSlaRunConfTestVrfName OBJECT-TYPE
+	SYNTAX     DisplayString
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The name of the virtual Routing/Forwarding instance which the test belongs."
+	::= { eltEsrIpSlaRunConfTestEntry 5 }
+
+eltEsrIpSlaRunConfTestDstAddressType OBJECT-TYPE
+	SYNTAX     InetAddressType
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The type describe address in the
+	     eltEsrIpSlaRunConfTestDstAddress field."
+	::= { eltEsrIpSlaRunConfTestEntry 6 }
+
+eltEsrIpSlaRunConfTestDstAddress OBJECT-TYPE
+	SYNTAX     InetAddress
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The destination address."
+	::= { eltEsrIpSlaRunConfTestEntry 7 }
+
+eltEsrIpSlaRunConfTestDstPort OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The destination port number."
+	::= { eltEsrIpSlaRunConfTestEntry 8 }
+
+eltEsrIpSlaRunConfTestSrcAddressType OBJECT-TYPE
+	SYNTAX     InetAddressType
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The type describe address in the
+	     eltEsrIpSlaRunConfTestSrcAddress field."
+	::= { eltEsrIpSlaRunConfTestEntry 9 }
+
+eltEsrIpSlaRunConfTestSrcAddress OBJECT-TYPE
+	SYNTAX     InetAddress
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The source address."
+	::= { eltEsrIpSlaRunConfTestEntry 10 }
+
+eltEsrIpSlaRunConfTestSrcPort OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The source port number."
+	::= { eltEsrIpSlaRunConfTestEntry 11 }
+
+eltEsrIpSlaRunConfTestSrcIfaceIndex OBJECT-TYPE
+	SYNTAX     InterfaceIndex
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The source interface index."
+	::= { eltEsrIpSlaRunConfTestEntry 12 }
+
+eltEsrIpSlaRunConfTestCtrlPhaseDstPort OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The destination port number for the control phase."
+	::= { eltEsrIpSlaRunConfTestEntry 13 }
+
+eltEsrIpSlaRunConfTestCtrlPhaseSrcPort OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The source port number for the control phase."
+	::= { eltEsrIpSlaRunConfTestEntry 14 }
+
+eltEsrIpSlaRunConfTestCtrlPhaseTimeout OBJECT-TYPE
+	SYNTAX     Unsigned32
+	UNITS      "ms"
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The timeout of the control phase in milliseconds."
+	::= { eltEsrIpSlaRunConfTestEntry 15 }
+
+eltEsrIpSlaRunConfTestCtrlPhaseAuthType OBJECT-TYPE
+	SYNTAX     eltEsrIpSlaAuthenticationMode
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The algorithm of the control phase authentication."
+	::= { eltEsrIpSlaRunConfTestEntry 16 }
+
+eltEsrIpSlaRunConfTestCtrlPhaseAuthKeyId OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The key id for the control phase authentication."
+	::= { eltEsrIpSlaRunConfTestEntry 17 }
+
+eltEsrIpSlaRunConfTestCtrlPhaseAuthKeyStrEncrypt OBJECT-TYPE
+	SYNTAX     DisplayString (SIZE (16..32))
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The key for the control phase authentication.
+	     It is the encrypted string in hex."
+	::= { eltEsrIpSlaRunConfTestEntry 18 }
+
+eltEsrIpSlaRunConfTestFrequrency OBJECT-TYPE
+	SYNTAX     INTEGER
+	UNITS      "sec"
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The test retry period in seconds."
+	::= { eltEsrIpSlaRunConfTestEntry 19 }
+
+eltEsrIpSlaRunConfTestInterval OBJECT-TYPE
+	SYNTAX     INTEGER
+	UNITS      "ms"
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The interval in milliseconds."
+	::= { eltEsrIpSlaRunConfTestEntry 20 }
+
+eltEsrIpSlaRunConfTestTimeout OBJECT-TYPE
+	SYNTAX     Unsigned32
+	UNITS      "ms"
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The timeout of the test in milliseconds."
+	::= { eltEsrIpSlaRunConfTestEntry 21 }
+
+eltEsrIpSlaRunConfTestNumPackets OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The number of packets."
+	::= { eltEsrIpSlaRunConfTestEntry 22 }
+
+eltEsrIpSlaRunConfTestReqPacketSize OBJECT-TYPE
+	SYNTAX     INTEGER
+	UNITS      "B"
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The size of packet in bytes."
+	::= { eltEsrIpSlaRunConfTestEntry 23 }
+
+eltEsrIpSlaRunConfTestCOS OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The value of COS."
+	::= { eltEsrIpSlaRunConfTestEntry 24 }
+
+eltEsrIpSlaRunConfTestDSCP OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The value of DSCP."
+	::= { eltEsrIpSlaRunConfTestEntry 25 }
+
+eltEsrIpSlaRunConfTestTTL OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The value of TTL."
+	::= { eltEsrIpSlaRunConfTestEntry 26 }
+
+eltEsrIpSlaRunConfTestRepHistoryCount OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The number of history records."
+	::= { eltEsrIpSlaRunConfTestEntry 27 }
+
+eltEsrIpSlaCandConfScheduleTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF EltEsrIpSlaCandConfScheduleEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION "Table of candidate configuration of a schedule for IP SLA tests."
+	::= { eltEsrIpSlaConfigs 5 }
+
+eltEsrIpSlaCandConfScheduleEntry OBJECT-TYPE
+	SYNTAX EltEsrIpSlaCandConfScheduleEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION "Entry describes the schedule for IP SLA test created
+	             in eltEsrIpSlaCandConfTestTable entry with eltEsrIpSlaCandConfTestIndex.
+	             Note: value in the field eltEsrIpSlaCandConfScheduleTestNumber must be equal to
+	                   eltEsrIpSlaCandConfTestIndex for the corresponding IP SLA test.
+	             Control through the eltEsrIpSlaCandConfScheduleTestNumber field."
+	INDEX { eltEsrIpSlaCandConfScheduleTestNumber }
+	::= { eltEsrIpSlaCandConfScheduleTable 1 }
+
+EltEsrIpSlaCandConfScheduleEntry ::= SEQUENCE {
+
+	eltEsrIpSlaCandConfScheduleTestNumber   INTEGER,
+
+	eltEsrIpSlaCandConfScheduleEnable       TruthValue,
+	eltEsrIpSlaCandConfScheduleLifeTime     Unsigned32,
+	eltEsrIpSlaCandConfScheduleStartNow     TruthValue,
+	eltEsrIpSlaCandConfScheduleStartDate    DateAndTime
+}
+
+eltEsrIpSlaCandConfScheduleTestNumber OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "Number of the IP SLA test."
+	::= { eltEsrIpSlaCandConfScheduleEntry 1 }
+
+eltEsrIpSlaCandConfScheduleEnable OBJECT-TYPE
+	SYNTAX     TruthValue
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "Whether the schedule is enabled."
+	::= { eltEsrIpSlaCandConfScheduleEntry 2 }
+
+eltEsrIpSlaCandConfScheduleLifeTime OBJECT-TYPE
+	SYNTAX     Unsigned32
+	UNITS      "sec"
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The life time in seconds.
+	     Value '0' means unlimited life time."
+	::= { eltEsrIpSlaCandConfScheduleEntry 3 }
+
+eltEsrIpSlaCandConfScheduleStartNow OBJECT-TYPE
+	SYNTAX     TruthValue
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "Whether start now is enabled."
+	::= { eltEsrIpSlaCandConfScheduleEntry 4 }
+
+eltEsrIpSlaCandConfScheduleStartDate OBJECT-TYPE
+	SYNTAX     DateAndTime
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The date when the test will be started."
+	::= { eltEsrIpSlaCandConfScheduleEntry 5 }
+
+eltEsrIpSlaRunConfScheduleTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF EltEsrIpSlaRunConfScheduleEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION "Table of running configuration of a schedule for IP SLA tests."
+	::= { eltEsrIpSlaConfigs 6 }
+
+eltEsrIpSlaRunConfScheduleEntry OBJECT-TYPE
+	SYNTAX EltEsrIpSlaRunConfScheduleEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION "Entry describes the schedule for IP SLA test created
+	             in eltEsrIpSlaRunConfTestTable entry with eltEsrIpSlaRunConfTestIndex.
+	             Note: value in the field eltEsrIpSlaRunConfScheduleTestNumber must be equal to
+	                   eltEsrIpSlaRunConfTestIndex for the corresponding IP SLA test."
+	INDEX { eltEsrIpSlaRunConfScheduleTestNumber }
+	::= { eltEsrIpSlaRunConfScheduleTable 1 }
+
+EltEsrIpSlaRunConfScheduleEntry ::= SEQUENCE {
+
+	eltEsrIpSlaRunConfScheduleTestNumber   INTEGER,
+
+	eltEsrIpSlaRunConfScheduleEnable       TruthValue,
+	eltEsrIpSlaRunConfScheduleLifeTime     Unsigned32,
+	eltEsrIpSlaRunConfScheduleStartNow     TruthValue,
+	eltEsrIpSlaRunConfScheduleStartDate    DateAndTime
+}
+
+eltEsrIpSlaRunConfScheduleTestNumber OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS not-accessible
+	STATUS     current
+	DESCRIPTION
+	    "Number of the IP SLA test."
+	::= { eltEsrIpSlaRunConfScheduleEntry 1 }
+
+eltEsrIpSlaRunConfScheduleEnable OBJECT-TYPE
+	SYNTAX     TruthValue
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "Whether the schedule is enabled."
+	::= { eltEsrIpSlaRunConfScheduleEntry 2 }
+
+eltEsrIpSlaRunConfScheduleLifeTime OBJECT-TYPE
+	SYNTAX     Unsigned32
+	UNITS      "sec"
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The life time in seconds.
+	     Value '0' means unlimited life time."
+	::= { eltEsrIpSlaRunConfScheduleEntry 3 }
+
+eltEsrIpSlaRunConfScheduleStartNow OBJECT-TYPE
+	SYNTAX     TruthValue
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "Whether start now is enabled."
+	::= { eltEsrIpSlaRunConfScheduleEntry 4 }
+
+eltEsrIpSlaRunConfScheduleStartDate OBJECT-TYPE
+	SYNTAX     DateAndTime
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The date when the test will be started."
+	::= { eltEsrIpSlaRunConfScheduleEntry 5 }
+
+eltEsrIpSlaCandConfThresholdTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF EltEsrIpSlaCandConfThresholdEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION "Table of candidate configuration of an IP SLA test thresholds."
+	::= { eltEsrIpSlaConfigs 7 }
+
+eltEsrIpSlaCandConfThresholdEntry OBJECT-TYPE
+	SYNTAX EltEsrIpSlaCandConfThresholdEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION "Entry describes the thresholds for IP SLA test created
+	             in eltEsrIpSlaCandConfTestTable entry with eltEsrIpSlaCandConfTestIndex.
+	             Note: value in the field eltEsrIpSlaCandConfThresholdTestNumber must be equal to
+	                   eltEsrIpSlaCandConfTestIndex for the corresponding IP SLA test.
+	             Control through the eltEsrIpSlaCandConfThresholdTestNumber field."
+	INDEX { eltEsrIpSlaCandConfThresholdTestNumber }
+	::= { eltEsrIpSlaCandConfThresholdTable 1 }
+
+EltEsrIpSlaCandConfThresholdEntry ::= SEQUENCE {
+
+	eltEsrIpSlaCandConfThresholdTestNumber           INTEGER,
+
+	eltEsrIpSlaCandConfThresholdLostHigh             INTEGER,
+	eltEsrIpSlaCandConfThresholdLostLow              INTEGER,
+
+	eltEsrIpSlaCandConfThresholdLostForwardHigh      INTEGER,
+	eltEsrIpSlaCandConfThresholdLostForwardLow       INTEGER,
+	eltEsrIpSlaCandConfThresholdLostReverseHigh      INTEGER,
+	eltEsrIpSlaCandConfThresholdLostReverseLow       INTEGER,
+
+	eltEsrIpSlaCandConfThresholdJitterHigh           INTEGER,
+	eltEsrIpSlaCandConfThresholdJitterLow            INTEGER,
+
+	eltEsrIpSlaCandConfThresholdJitterForwardHigh    INTEGER,
+	eltEsrIpSlaCandConfThresholdJitterForwardLow     INTEGER,
+	eltEsrIpSlaCandConfThresholdJitterReverseHigh    INTEGER,
+	eltEsrIpSlaCandConfThresholdJitterReverseLow     INTEGER,
+
+	eltEsrIpSlaCandConfThresholdDelayHigh            INTEGER,
+	eltEsrIpSlaCandConfThresholdDelayLow             INTEGER,
+
+	eltEsrIpSlaCandConfThresholdDelayForwardHigh     INTEGER,
+	eltEsrIpSlaCandConfThresholdDelayForwardLow      INTEGER,
+	eltEsrIpSlaCandConfThresholdDelayReverseHigh     INTEGER,
+	eltEsrIpSlaCandConfThresholdDelayReverseLow      INTEGER
+}
+
+eltEsrIpSlaCandConfThresholdTestNumber OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "Number of the linked test.
+	     Set '0' to this field to destroy entry and configuration."
+	::= { eltEsrIpSlaCandConfThresholdEntry 1 }
+
+eltEsrIpSlaCandConfThresholdLostHigh OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The number of lost packets for high losses threshold."
+	::= { eltEsrIpSlaCandConfThresholdEntry 2 }
+
+eltEsrIpSlaCandConfThresholdLostLow OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The number of lost packets for low losses threshold."
+	::= { eltEsrIpSlaCandConfThresholdEntry 3 }
+
+eltEsrIpSlaCandConfThresholdLostForwardHigh OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The number of lost packets for high forward losses threshold."
+	::= { eltEsrIpSlaCandConfThresholdEntry 4 }
+
+eltEsrIpSlaCandConfThresholdLostForwardLow OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The number of lost packets for low forward losses threshold."
+	::= { eltEsrIpSlaCandConfThresholdEntry 5 }
+
+eltEsrIpSlaCandConfThresholdLostReverseHigh OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The number of lost packets for high reverse losses threshold."
+	::= { eltEsrIpSlaCandConfThresholdEntry 6 }
+
+eltEsrIpSlaCandConfThresholdLostReverseLow OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The number of lost packets for low reverse losses threshold."
+	::= { eltEsrIpSlaCandConfThresholdEntry 7 }
+
+eltEsrIpSlaCandConfThresholdJitterHigh OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The value of jitter for high jitter threshold.
+	     In milliseconds."
+	::= { eltEsrIpSlaCandConfThresholdEntry 8 }
+
+eltEsrIpSlaCandConfThresholdJitterLow OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The value of jitter for low jitter threshold.
+	     In milliseconds."
+	::= { eltEsrIpSlaCandConfThresholdEntry 9 }
+
+eltEsrIpSlaCandConfThresholdJitterForwardHigh OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The value of jitter for high forward jitter threshold.
+	     In milliseconds."
+	::= { eltEsrIpSlaCandConfThresholdEntry 10 }
+
+eltEsrIpSlaCandConfThresholdJitterForwardLow OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The value of jitter for low forward jitter threshold.
+	     In milliseconds."
+	::= { eltEsrIpSlaCandConfThresholdEntry 11 }
+
+eltEsrIpSlaCandConfThresholdJitterReverseHigh OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The value of jitter for high reverse jitter threshold.
+	     In milliseconds."
+	::= { eltEsrIpSlaCandConfThresholdEntry 12 }
+
+eltEsrIpSlaCandConfThresholdJitterReverseLow OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The value of jitter for low reverse jitter threshold.
+	     In milliseconds."
+	::= { eltEsrIpSlaCandConfThresholdEntry 13 }
+
+eltEsrIpSlaCandConfThresholdDelayHigh OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The value of delay for high delay threshold.
+	     In milliseconds."
+	::= { eltEsrIpSlaCandConfThresholdEntry 14 }
+
+eltEsrIpSlaCandConfThresholdDelayLow OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The value of delay for low delay threshold.
+	     In milliseconds."
+	::= { eltEsrIpSlaCandConfThresholdEntry 15 }
+
+eltEsrIpSlaCandConfThresholdDelayForwardHigh OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The value of delay for high forward delay threshold.
+	     In milliseconds."
+	::= { eltEsrIpSlaCandConfThresholdEntry 16 }
+
+eltEsrIpSlaCandConfThresholdDelayForwardLow OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The value of delay for low forward delay threshold.
+	     In milliseconds."
+	::= { eltEsrIpSlaCandConfThresholdEntry 17 }
+
+eltEsrIpSlaCandConfThresholdDelayReverseHigh OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The value of delay for high reverse delay threshold.
+	     In milliseconds."
+	::= { eltEsrIpSlaCandConfThresholdEntry 18 }
+
+eltEsrIpSlaCandConfThresholdDelayReverseLow OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The value of delay for low reverse delay threshold.
+	     In milliseconds."
+	::= { eltEsrIpSlaCandConfThresholdEntry 19 }
+
+eltEsrIpSlaRunConfThresholdTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF EltEsrIpSlaRunConfThresholdEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION "Table of running configuration of an IP SLA test thresholds."
+	::= { eltEsrIpSlaConfigs 8 }
+
+eltEsrIpSlaRunConfThresholdEntry OBJECT-TYPE
+	SYNTAX EltEsrIpSlaRunConfThresholdEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION "Entry describes the thresholds for IP SLA test created
+	             in eltEsrIpSlaRunConfTestTable entry with eltEsrIpSlaRunConfTestIndex.
+	             Note: value in the field eltEsrIpSlaRunConfThresholdTestNumber must be equal to
+	                   eltEsrIpSlaRunConfTestIndex for the corresponding IP SLA test."
+	INDEX { eltEsrIpSlaRunConfThresholdTestNumber }
+	::= { eltEsrIpSlaRunConfThresholdTable 1 }
+
+EltEsrIpSlaRunConfThresholdEntry ::= SEQUENCE {
+
+	eltEsrIpSlaRunConfThresholdTestNumber           INTEGER,
+
+	eltEsrIpSlaRunConfThresholdLostHigh             INTEGER,
+	eltEsrIpSlaRunConfThresholdLostLow              INTEGER,
+
+	eltEsrIpSlaRunConfThresholdLostForwardHigh      INTEGER,
+	eltEsrIpSlaRunConfThresholdLostForwardLow       INTEGER,
+	eltEsrIpSlaRunConfThresholdLostReverseHigh      INTEGER,
+	eltEsrIpSlaRunConfThresholdLostReverseLow       INTEGER,
+
+	eltEsrIpSlaRunConfThresholdJitterHigh           INTEGER,
+	eltEsrIpSlaRunConfThresholdJitterLow            INTEGER,
+
+	eltEsrIpSlaRunConfThresholdJitterForwardHigh    INTEGER,
+	eltEsrIpSlaRunConfThresholdJitterForwardLow     INTEGER,
+	eltEsrIpSlaRunConfThresholdJitterReverseHigh    INTEGER,
+	eltEsrIpSlaRunConfThresholdJitterReverseLow     INTEGER,
+
+	eltEsrIpSlaRunConfThresholdDelayHigh            INTEGER,
+	eltEsrIpSlaRunConfThresholdDelayLow             INTEGER,
+
+	eltEsrIpSlaRunConfThresholdDelayForwardHigh     INTEGER,
+	eltEsrIpSlaRunConfThresholdDelayForwardLow      INTEGER,
+	eltEsrIpSlaRunConfThresholdDelayReverseHigh     INTEGER,
+	eltEsrIpSlaRunConfThresholdDelayReverseLow      INTEGER
+}
+
+eltEsrIpSlaRunConfThresholdTestNumber OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS not-accessible
+	STATUS     current
+	DESCRIPTION
+	    "Number of the linked test."
+	::= { eltEsrIpSlaRunConfThresholdEntry 1 }
+
+eltEsrIpSlaRunConfThresholdLostHigh OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The number of lost packets for high losses threshold."
+	::= { eltEsrIpSlaRunConfThresholdEntry 2 }
+
+eltEsrIpSlaRunConfThresholdLostLow OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The number of lost packets for low losses threshold."
+	::= { eltEsrIpSlaRunConfThresholdEntry 3 }
+
+eltEsrIpSlaRunConfThresholdLostForwardHigh OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The number of lost packets for high forward losses threshold."
+	::= { eltEsrIpSlaRunConfThresholdEntry 4 }
+
+eltEsrIpSlaRunConfThresholdLostForwardLow OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The number of lost packets for low forward losses threshold."
+	::= { eltEsrIpSlaRunConfThresholdEntry 5 }
+
+eltEsrIpSlaRunConfThresholdLostReverseHigh OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The number of lost packets for high reverse losses threshold."
+	::= { eltEsrIpSlaRunConfThresholdEntry 6 }
+
+eltEsrIpSlaRunConfThresholdLostReverseLow OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The number of lost packets for low reverse losses threshold."
+	::= { eltEsrIpSlaRunConfThresholdEntry 7 }
+
+eltEsrIpSlaRunConfThresholdJitterHigh OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The value of jitter for high jitter threshold.
+	     In milliseconds."
+	::= { eltEsrIpSlaRunConfThresholdEntry 8 }
+
+eltEsrIpSlaRunConfThresholdJitterLow OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The value of jitter for low jitter threshold.
+	     In milliseconds."
+	::= { eltEsrIpSlaRunConfThresholdEntry 9 }
+
+eltEsrIpSlaRunConfThresholdJitterForwardHigh OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The value of jitter for high forward jitter threshold.
+	     In milliseconds."
+	::= { eltEsrIpSlaRunConfThresholdEntry 10 }
+
+eltEsrIpSlaRunConfThresholdJitterForwardLow OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The value of jitter for low forward jitter threshold.
+	     In milliseconds."
+	::= { eltEsrIpSlaRunConfThresholdEntry 11 }
+
+eltEsrIpSlaRunConfThresholdJitterReverseHigh OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The value of jitter for high reverse jitter threshold.
+	     In milliseconds."
+	::= { eltEsrIpSlaRunConfThresholdEntry 12 }
+
+eltEsrIpSlaRunConfThresholdJitterReverseLow OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The value of jitter for low reverse jitter threshold.
+	     In milliseconds."
+	::= { eltEsrIpSlaRunConfThresholdEntry 13 }
+
+eltEsrIpSlaRunConfThresholdDelayHigh OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The value of delay for high delay threshold.
+	     In milliseconds."
+	::= { eltEsrIpSlaRunConfThresholdEntry 14 }
+
+eltEsrIpSlaRunConfThresholdDelayLow OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The value of delay for low delay threshold.
+	     In milliseconds."
+	::= { eltEsrIpSlaRunConfThresholdEntry 15 }
+
+eltEsrIpSlaRunConfThresholdDelayForwardHigh OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The value of delay for high forward delay threshold.
+	     In milliseconds."
+	::= { eltEsrIpSlaRunConfThresholdEntry 16 }
+
+eltEsrIpSlaRunConfThresholdDelayForwardLow OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The value of delay for low forward delay threshold.
+	     In milliseconds."
+	::= { eltEsrIpSlaRunConfThresholdEntry 17 }
+
+eltEsrIpSlaRunConfThresholdDelayReverseHigh OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The value of delay for high reverse delay threshold.
+	     In milliseconds."
+	::= { eltEsrIpSlaRunConfThresholdEntry 18 }
+
+eltEsrIpSlaRunConfThresholdDelayReverseLow OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The value of delay for low reverse delay threshold.
+	     In milliseconds."
+	::= { eltEsrIpSlaRunConfThresholdEntry 19 }
+
+eltEsrIpSlaCandConfResponderTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF EltEsrIpSlaCandConfResponderEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION "Table of candidate configuration of a responder on interfaces."
+	::= { eltEsrIpSlaConfigs 9 }
+
+eltEsrIpSlaCandConfResponderEntry OBJECT-TYPE
+	SYNTAX EltEsrIpSlaCandConfResponderEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION "Entry describes the IP SLA responder on interface.
+	             Control through the eltEsrIpSlaCandConfResponderIfaceIndex field."
+	INDEX { eltEsrIpSlaCandConfResponderIfaceIndex }
+	::= { eltEsrIpSlaCandConfResponderTable 1 }
+
+EltEsrIpSlaCandConfResponderEntry ::= SEQUENCE {
+
+	eltEsrIpSlaCandConfResponderIfaceIndex    Integer32,
+
+	eltEsrIpSlaCandConfResponderCisco         TruthValue,
+	eltEsrIpSlaCandConfResponderCiscoPort     INTEGER,
+	eltEsrIpSlaCandConfResponderEltex         TruthValue,
+	eltEsrIpSlaCandConfResponderEltexPort     INTEGER
+}
+
+eltEsrIpSlaCandConfResponderIfaceIndex OBJECT-TYPE
+	SYNTAX     Integer32
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The index of the interface in which IP SLA responder configured."
+	::= { eltEsrIpSlaCandConfResponderEntry 1 }
+
+eltEsrIpSlaCandConfResponderCisco OBJECT-TYPE
+	SYNTAX     TruthValue
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "Enabling the cisco-compatible responder."
+	::= { eltEsrIpSlaCandConfResponderEntry 2 }
+
+eltEsrIpSlaCandConfResponderCiscoPort OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The port number used by cisco-compatible responder."
+	::= { eltEsrIpSlaCandConfResponderEntry 3 }
+
+eltEsrIpSlaCandConfResponderEltex OBJECT-TYPE
+	SYNTAX     TruthValue
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "Enabling the Eltex responder."
+	::= { eltEsrIpSlaCandConfResponderEntry 4 }
+
+eltEsrIpSlaCandConfResponderEltexPort OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The port number used by Eltex responder."
+	::= { eltEsrIpSlaCandConfResponderEntry 5 }
+
+eltEsrIpSlaRunConfResponderTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF EltEsrIpSlaRunConfResponderEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION "Table of running configuration of a responder on interfaces."
+	::= { eltEsrIpSlaConfigs 10}
+
+eltEsrIpSlaRunConfResponderEntry OBJECT-TYPE
+	SYNTAX EltEsrIpSlaRunConfResponderEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION "Entry describes the IP SLA responder on interface."
+	INDEX { eltEsrIpSlaRunConfResponderIfaceIndex }
+	::= { eltEsrIpSlaRunConfResponderTable 1 }
+
+EltEsrIpSlaRunConfResponderEntry ::= SEQUENCE {
+
+	eltEsrIpSlaRunConfResponderIfaceIndex    InterfaceIndex,
+
+	eltEsrIpSlaRunConfResponderCisco         TruthValue,
+	eltEsrIpSlaRunConfResponderCiscoPort     INTEGER,
+	eltEsrIpSlaRunConfResponderEltex         TruthValue,
+	eltEsrIpSlaRunConfResponderEltexPort     INTEGER
+}
+
+eltEsrIpSlaRunConfResponderIfaceIndex OBJECT-TYPE
+	SYNTAX     InterfaceIndex
+	MAX-ACCESS not-accessible
+	STATUS     current
+	DESCRIPTION
+	    "The index of interface in which IP SLA responder configured."
+	::= { eltEsrIpSlaRunConfResponderEntry 1 }
+
+eltEsrIpSlaRunConfResponderCisco OBJECT-TYPE
+	SYNTAX     TruthValue
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "Enabling the cisco-compatible responder."
+	::= { eltEsrIpSlaRunConfResponderEntry 2 }
+
+eltEsrIpSlaRunConfResponderCiscoPort OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The port number used by cisco-compatible responder."
+	::= { eltEsrIpSlaRunConfResponderEntry 3 }
+
+eltEsrIpSlaRunConfResponderEltex OBJECT-TYPE
+	SYNTAX     TruthValue
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "Enabling the Eltex responder."
+	::= { eltEsrIpSlaRunConfResponderEntry 4 }
+
+eltEsrIpSlaRunConfResponderEltexPort OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The port number used by Eltex responder."
+
+	::= { eltEsrIpSlaRunConfResponderEntry 5 }
+
+eltEsrIpSlaCandConfResponderGeneralTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF EltEsrIpSlaCandConfResponderGeneralEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION "Table of candidate general configuration of a responders."
+	::= { eltEsrIpSlaConfigs 11 }
+
+eltEsrIpSlaCandConfResponderGeneralEntry OBJECT-TYPE
+	SYNTAX EltEsrIpSlaCandConfResponderGeneralEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION "Entry describes the IP SLA responder general configurations.
+	             Control through the eltEsrIpSlaCandConfResponderGeneralVrfName field."
+	INDEX { eltEsrIpSlaCandConfResponderGeneralVrfName }
+	::= { eltEsrIpSlaCandConfResponderGeneralTable 1 }
+
+EltEsrIpSlaCandConfResponderGeneralEntry ::= SEQUENCE {
+
+	eltEsrIpSlaCandConfResponderGeneralVrfName              DisplayString,
+	eltEsrIpSlaCandConfResponderGeneralTimeout              Unsigned32,
+	eltEsrIpSlaCandConfResponderGeneralAuthKeyChainName     DisplayString,
+	eltEsrIpSlaCandConfResponderGeneralAuthKeyStr           DisplayString,
+	eltEsrIpSlaCandConfResponderGeneralAuthKeyStrEncrypt    DisplayString
+}
+
+eltEsrIpSlaCandConfResponderGeneralVrfName OBJECT-TYPE
+	SYNTAX     DisplayString
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The name of the virtual Routing/Forwarding instance which the responder belongs.
+	     Set empty string to this field to destroy entry and configuration."
+	::= { eltEsrIpSlaCandConfResponderGeneralEntry 1 }
+
+eltEsrIpSlaCandConfResponderGeneralTimeout OBJECT-TYPE
+	SYNTAX     Unsigned32
+	UNITS      "ms"
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The value of the timeout in milliseconds."
+	::= { eltEsrIpSlaCandConfResponderGeneralEntry 2 }
+
+eltEsrIpSlaCandConfResponderGeneralAuthKeyChainName OBJECT-TYPE
+	SYNTAX     DisplayString
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The name of the key-chain for the authentication."
+	::= { eltEsrIpSlaCandConfResponderGeneralEntry 3 }
+
+eltEsrIpSlaCandConfResponderGeneralAuthKeyStr OBJECT-TYPE
+	SYNTAX     DisplayString
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The key for the authentication.
+	     It is the string in ascii-text. Not be displayed."
+	::= { eltEsrIpSlaCandConfResponderGeneralEntry 4 }
+
+eltEsrIpSlaCandConfResponderGeneralAuthKeyStrEncrypt OBJECT-TYPE
+	SYNTAX     DisplayString (SIZE (16..32))
+	MAX-ACCESS read-create
+	STATUS     current
+	DESCRIPTION
+	    "The key for the authentication.
+	     It is the encrypted string in hex."
+	::= { eltEsrIpSlaCandConfResponderGeneralEntry 5 }
+
+eltEsrIpSlaRunConfResponderGeneralTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF EltEsrIpSlaRunConfResponderGeneralEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION "Table of running general configuration of a responders."
+	::= { eltEsrIpSlaConfigs 12 }
+
+eltEsrIpSlaRunConfResponderGeneralEntry OBJECT-TYPE
+	SYNTAX EltEsrIpSlaRunConfResponderGeneralEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION "Entry describes the IP SLA responder general configurations."
+	INDEX { eltEsrIpSlaRunConfResponderGeneralVrfName }
+	::= { eltEsrIpSlaRunConfResponderGeneralTable 1 }
+
+EltEsrIpSlaRunConfResponderGeneralEntry ::= SEQUENCE {
+
+	eltEsrIpSlaRunConfResponderGeneralVrfName              DisplayString,
+	eltEsrIpSlaRunConfResponderGeneralTimeout              Unsigned32,
+	eltEsrIpSlaRunConfResponderGeneralAuthKeyChainName     DisplayString,
+	eltEsrIpSlaRunConfResponderGeneralAuthKeyStrEncrypt    DisplayString
+}
+
+eltEsrIpSlaRunConfResponderGeneralVrfName OBJECT-TYPE
+	SYNTAX     DisplayString
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The name of the virtual Routing/Forwarding instance which the responder belongs."
+	::= { eltEsrIpSlaRunConfResponderGeneralEntry 1 }
+
+eltEsrIpSlaRunConfResponderGeneralTimeout OBJECT-TYPE
+	SYNTAX     Unsigned32
+	UNITS      "ms"
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The value of the timeout in milliseconds."
+	::= { eltEsrIpSlaRunConfResponderGeneralEntry 2 }
+
+eltEsrIpSlaRunConfResponderGeneralAuthKeyChainName OBJECT-TYPE
+	SYNTAX     DisplayString
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The name of the key-chain for the authentication."
+	::= { eltEsrIpSlaRunConfResponderGeneralEntry 3 }
+
+eltEsrIpSlaRunConfResponderGeneralAuthKeyStrEncrypt OBJECT-TYPE
+	SYNTAX     DisplayString (SIZE (16..32))
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "The key for the authentication.
+	     It is the encrypted string in hex."
+	::= { eltEsrIpSlaRunConfResponderGeneralEntry 4 }
+
+-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+-- IP SLA statistics
+-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+eltEsrIpSlaStatTestTable OBJECT-TYPE
+	SYNTAX SEQUENCE OF EltEsrIpSlaStatTestEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION "Table of an IP SLA tests statistic."
+	::= { eltEsrIpSlaStatistics 1 }
+
+eltEsrIpSlaStatTestEntry OBJECT-TYPE
+	SYNTAX EltEsrIpSlaStatTestEntry
+	MAX-ACCESS not-accessible
+	STATUS current
+	DESCRIPTION "Entry contains statistic of the test."
+	INDEX { eltEsrIpSlaStatTestNumber }
+	::= { eltEsrIpSlaStatTestTable 1 }
+
+EltEsrIpSlaStatTestEntry ::= SEQUENCE {
+
+	eltEsrIpSlaStatTestNumber                    INTEGER,
+
+	eltEsrIpSlaStatTestTransmittedPackets        Unsigned32,
+
+	eltEsrIpSlaStatTestLostPackets               Unsigned32,
+	eltEsrIpSlaStatTestLostPacketsForward        Unsigned32,
+	eltEsrIpSlaStatTestLostPacketsReverse        Unsigned32,
+
+	eltEsrIpSlaStatTestOneWayDelayForwardMin     Unsigned32,
+	eltEsrIpSlaStatTestOneWayDelayForwardMax     Unsigned32,
+	eltEsrIpSlaStatTestOneWayDelayForwardAvg     Unsigned32,
+
+	eltEsrIpSlaStatTestOneWayDelayReverseMin     Unsigned32,
+	eltEsrIpSlaStatTestOneWayDelayReverseMax     Unsigned32,
+	eltEsrIpSlaStatTestOneWayDelayReverseAvg     Unsigned32,
+
+	eltEsrIpSlaStatTestOneWayJitterForwardMin    Unsigned32,
+	eltEsrIpSlaStatTestOneWayJitterForwardMax    Unsigned32,
+	eltEsrIpSlaStatTestOneWayJitterForwardAvg    Unsigned32,
+
+	eltEsrIpSlaStatTestOneWayJitterReverseMin    Unsigned32,
+	eltEsrIpSlaStatTestOneWayJitterReverseMax    Unsigned32,
+	eltEsrIpSlaStatTestOneWayJitterReverseAvg    Unsigned32,
+
+	eltEsrIpSlaStatTestTwoWayDelayMin            Unsigned32,
+	eltEsrIpSlaStatTestTwoWayDelayMax            Unsigned32,
+	eltEsrIpSlaStatTestTwoWayDelayAvg            Unsigned32,
+
+	eltEsrIpSlaStatTestTwoWayJitterMin           Unsigned32,
+	eltEsrIpSlaStatTestTwoWayJitterMax           Unsigned32,
+	eltEsrIpSlaStatTestTwoWayJitterAvg           Unsigned32,
+
+	eltEsrIpSlaStatTestDuplicatePackets          Unsigned32,
+	eltEsrIpSlaStatTestOutOfSequenceForward      Unsigned32,
+	eltEsrIpSlaStatTestOutOfSequenceReverse      Unsigned32,
+}
+
+eltEsrIpSlaStatTestNumber OBJECT-TYPE
+	SYNTAX     INTEGER
+	MAX-ACCESS not-accessible
+	STATUS     current
+	DESCRIPTION
+	    "The number of the test in the eltEsrIpSlaCandConfTestTable."
+	::= { eltEsrIpSlaStatTestEntry 1 }
+
+eltEsrIpSlaStatTestTransmittedPackets OBJECT-TYPE
+	SYNTAX     Unsigned32
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "Transmitted packets."
+	::= { eltEsrIpSlaStatTestEntry 2 }
+
+eltEsrIpSlaStatTestLostPackets OBJECT-TYPE
+	SYNTAX     Unsigned32
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "Lost packets."
+	::= { eltEsrIpSlaStatTestEntry 3 }
+
+eltEsrIpSlaStatTestLostPacketsForward OBJECT-TYPE
+	SYNTAX     Unsigned32
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "Lost packets in forward direction."
+	::= { eltEsrIpSlaStatTestEntry 4 }
+
+eltEsrIpSlaStatTestLostPacketsReverse OBJECT-TYPE
+	SYNTAX     Unsigned32
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "Lost packets in reverse direction."
+	::= { eltEsrIpSlaStatTestEntry 5 }
+
+eltEsrIpSlaStatTestOneWayDelayForwardMin OBJECT-TYPE
+	SYNTAX     Unsigned32
+	UNITS      "ms"
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "Minimal one-way delay forward in milliseconds."
+	::= { eltEsrIpSlaStatTestEntry 6 }
+
+eltEsrIpSlaStatTestOneWayDelayForwardMax OBJECT-TYPE
+	SYNTAX     Unsigned32
+	UNITS      "ms"
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "Maximal one-way delay forward in milliseconds."
+	::= { eltEsrIpSlaStatTestEntry 7 }
+
+eltEsrIpSlaStatTestOneWayDelayForwardAvg OBJECT-TYPE
+	SYNTAX     Unsigned32
+	UNITS      "ms"
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "Average one-way delay forward in milliseconds."
+	::= { eltEsrIpSlaStatTestEntry 8 }
+
+eltEsrIpSlaStatTestOneWayDelayReverseMin OBJECT-TYPE
+	SYNTAX     Unsigned32
+	UNITS      "ms"
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "Minimal one-way delay reverse in milliseconds."
+	::= { eltEsrIpSlaStatTestEntry 9 }
+
+eltEsrIpSlaStatTestOneWayDelayReverseMax OBJECT-TYPE
+	SYNTAX     Unsigned32
+	UNITS      "ms"
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "Maximal one-way delay reverse in milliseconds."
+	::= { eltEsrIpSlaStatTestEntry 10 }
+
+eltEsrIpSlaStatTestOneWayDelayReverseAvg OBJECT-TYPE
+	SYNTAX     Unsigned32
+	UNITS      "ms"
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "Average one-way delay reverse in milliseconds."
+	::= { eltEsrIpSlaStatTestEntry 11 }
+
+eltEsrIpSlaStatTestOneWayJitterForwardMin OBJECT-TYPE
+	SYNTAX     Unsigned32
+	UNITS      "ms"
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "Minimal one-way jitter forward in milliseconds."
+	::= { eltEsrIpSlaStatTestEntry 12 }
+
+eltEsrIpSlaStatTestOneWayJitterForwardMax OBJECT-TYPE
+	SYNTAX     Unsigned32
+	UNITS      "ms"
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "Maximal one-way jitter forward in milliseconds."
+	::= { eltEsrIpSlaStatTestEntry 13 }
+
+eltEsrIpSlaStatTestOneWayJitterForwardAvg OBJECT-TYPE
+	SYNTAX     Unsigned32
+	UNITS      "ms"
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "Average one-way jitter forward in milliseconds."
+	::= { eltEsrIpSlaStatTestEntry 14 }
+
+eltEsrIpSlaStatTestOneWayJitterReverseMin OBJECT-TYPE
+	SYNTAX     Unsigned32
+	UNITS      "ms"
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "Minimal one-way jitter reverse in milliseconds."
+	::= { eltEsrIpSlaStatTestEntry 15 }
+
+eltEsrIpSlaStatTestOneWayJitterReverseMax OBJECT-TYPE
+	SYNTAX     Unsigned32
+	UNITS      "ms"
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "Maximal one-way jitter reverse in milliseconds."
+	::= { eltEsrIpSlaStatTestEntry 16 }
+
+eltEsrIpSlaStatTestOneWayJitterReverseAvg OBJECT-TYPE
+	SYNTAX     Unsigned32
+	UNITS      "ms"
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "Average one-way jitter reverse in milliseconds."
+	::= { eltEsrIpSlaStatTestEntry 17 }
+
+eltEsrIpSlaStatTestTwoWayDelayMin OBJECT-TYPE
+	SYNTAX     Unsigned32
+	UNITS      "ms"
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "Minimal two-way delay in milliseconds."
+	::= { eltEsrIpSlaStatTestEntry 18 }
+
+eltEsrIpSlaStatTestTwoWayDelayMax OBJECT-TYPE
+	SYNTAX     Unsigned32
+	UNITS      "ms"
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "Maximal two-way delay in milliseconds."
+	::= { eltEsrIpSlaStatTestEntry 19 }
+
+eltEsrIpSlaStatTestTwoWayDelayAvg OBJECT-TYPE
+	SYNTAX     Unsigned32
+	UNITS      "ms"
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "Average two-way delay in milliseconds."
+	::= { eltEsrIpSlaStatTestEntry 20 }
+
+eltEsrIpSlaStatTestTwoWayJitterMin OBJECT-TYPE
+	SYNTAX     Unsigned32
+	UNITS      "ms"
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "Minimal two-way jitter in milliseconds."
+	::= { eltEsrIpSlaStatTestEntry 21 }
+
+eltEsrIpSlaStatTestTwoWayJitterMax OBJECT-TYPE
+	SYNTAX     Unsigned32
+	UNITS      "ms"
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "Maximal two-way jitter in milliseconds."
+	::= { eltEsrIpSlaStatTestEntry 22 }
+
+eltEsrIpSlaStatTestTwoWayJitterAvg OBJECT-TYPE
+	SYNTAX     Unsigned32
+	UNITS      "ms"
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "Minimal two-way jitter in milliseconds."
+	::= { eltEsrIpSlaStatTestEntry 23 }
+
+eltEsrIpSlaStatTestDuplicatePackets OBJECT-TYPE
+	SYNTAX     Unsigned32
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "Duplicate packets."
+	::= { eltEsrIpSlaStatTestEntry 24 }
+
+eltEsrIpSlaStatTestOutOfSequenceForward OBJECT-TYPE
+	SYNTAX     Unsigned32
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "Out of sequence packets in forward direction."
+	::= { eltEsrIpSlaStatTestEntry 25 }
+
+eltEsrIpSlaStatTestOutOfSequenceReverse OBJECT-TYPE
+	SYNTAX     Unsigned32
+	MAX-ACCESS read-only
+	STATUS     current
+	DESCRIPTION
+	    "Out of sequence packets in reverse direction."
+	::= { eltEsrIpSlaStatTestEntry 26 }
+
+END

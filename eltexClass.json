@@ -1,0 +1,121 @@
+{
+  "className": "ELTEX",
+  "metric": {
+    "eltEsrIpSlaStatTestTransmittedPackets": [
+      "rttPktTransmit",
+      1
+    ],
+    "eltEsrIpSlaStatTestLostPackets": [
+      "rttPktLoss",
+      1
+    ],
+    "eltEsrIpSlaStatTestLostPacketsForward": [
+      "rttPktLoss.sd",
+      1
+    ],
+    "eltEsrIpSlaStatTestLostPacketsReverse": [
+      "rttPktLoss.ds",
+      1
+    ],
+    "eltEsrIpSlaStatTestOneWayDelayForwardMin": [
+      "owDelayMin.sd",
+      1
+    ],
+    "eltEsrIpSlaStatTestOneWayDelayForwardMax": [
+      "owDelayMax.sd",
+      1
+    ],
+    "eltEsrIpSlaStatTestOneWayDelayForwardAvg": [
+      "owDelayAvg.sd",
+      1
+    ],
+    "eltEsrIpSlaStatTestOneWayDelayReverseMin": [
+      "owDelayMin.ds",
+      1
+    ],
+    "eltEsrIpSlaStatTestOneWayDelayReverseMax": [
+      "owDelayMax.ds",
+      1
+    ],
+    "eltEsrIpSlaStatTestOneWayDelayReverseAvg": [
+      "owDelayAvg.ds",
+      1
+    ],
+    "eltEsrIpSlaStatTestOneWayJitterForwardMin": [
+      "owJitterMin.sd",
+      1
+    ],
+    "eltEsrIpSlaStatTestOneWayJitterForwardMax": [
+      "owJitterMax.sd",
+      1
+    ],
+    "eltEsrIpSlaStatTestOneWayJitterForwardAvg": [
+      "owJitterAvg.sd",
+      1
+    ],
+    "eltEsrIpSlaStatTestOneWayJitterReverseMin": [
+      "owJitterMin.ds",
+      1
+    ],
+    "eltEsrIpSlaStatTestOneWayJitterReverseMax": [
+      "owJitterMax.ds",
+      1
+    ],
+    "eltEsrIpSlaStatTestOneWayJitterReverseAvg": [
+      "owJitterAvg.ds",
+      1
+    ],
+    "eltEsrIpSlaStatTestTwoWayDelayMin": [
+      "twRttMin",
+      1
+    ],
+    "eltEsrIpSlaStatTestTwoWayDelayMax": [
+      "twRttMax",
+      1
+    ],
+    "eltEsrIpSlaStatTestTwoWayDelayAvg": [
+      "twRttvg",
+      1
+    ],
+    "eltEsrIpSlaStatTestTwoWayJitterMin": [
+      "rttJitterMin",
+      1
+    ],
+    "eltEsrIpSlaStatTestTwoWayJitterMax": [
+      "rttJitterMax",
+      1
+    ],
+    "eltEsrIpSlaStatTestTwoWayJitterAvg": [
+      "rttJitterAvg",
+      1
+    ],
+    "eltEsrIpSlaStatTestDuplicatePackets": [
+      "rttDubPkt",
+      1
+    ],
+    "eltEsrIpSlaStatTestOutOfSequenceForward": [
+      "rttOutSec.sd",
+      1
+    ],
+    "eltEsrIpSlaStatTestOutOfSequenceReverse": [
+      "rttOutSec.ds",
+      1
+    ]
+  },
+
+  "devices": [
+    {"ip":"10.146.0.131",
+     "community":"public"},
+    {"ip":"10.146.2.64",
+     "community":"public"},
+    {"ip":"10.146.2.73",
+     "community":"public"},
+    {"ip":"10.161.71.250",
+     "community":"public"},
+    {"ip":"10.146.2.150",
+     "community":"public"}
+  ],
+  "mibs": [
+    "ELTEX-ESR-IPSLA-MIB::eltEsrIpSlaStatTestTable"
+  ]
+}
